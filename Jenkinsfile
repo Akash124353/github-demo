@@ -21,7 +21,7 @@ pipeline{
                 sh 'df -kh'
             }
         }
-        stage('memory usage'{
+        stage('memory usage'){
             steps{
                 sh 'free -h'
             }
