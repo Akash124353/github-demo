@@ -16,7 +16,7 @@ pipeline{
                 sh 'lscpu'
             }
         }
-        stage('disk usage'){
+        stage('disc usage'){
             steps{
                 sh 'df -kh'
             }
