@@ -1,31 +1,49 @@
-pipeline{
+pipeline {
     agent any
-    stages{
-        stage('print hostname'){
-            steps{
-                sh 'hostname'
+
+    environment {
+        DOCKER_IMAGE = 'akash124353/test-dev:latest'
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/akash124353/scorll-web.git'
             }
         }
-        stage('ip address'){
-            steps{
-                sh 'hostname -i'
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build -t $DOCKER_IMAGE .
+                '''
             }
         }
-        stage('cpu details'){
-            steps{
-                sh 'lscpu'
+
+        stage('Login to DockerHub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'docker-hub-credentials',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )]) {
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    }
+                }
             }
         }
-        stage('disk usage'){
-            steps{
-                sh 'df -kh'
+
+        stage('Push Docker Image') {
+            steps {
+                sh 'docker push $DOCKER_IMAGE'
             }
         }
-        stage('memory usage'{
-            steps{
-                sh 'free -h'
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'microk8s.kubectl apply -f deploy.yml'
             }
         }
-    }  
-        
+    }
 }
