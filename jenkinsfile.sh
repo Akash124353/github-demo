@@ -1,1 +1,10 @@
-echo "pipeline { agent any; stages { stage('Test') { steps { echo 'Jenkins OK' } } } }" > Jenkinsfile
+echo "pipeline {
+    agent any
+    stages {
+        stage('Run Shell Script') {
+            steps {
+                sh './jenkins.sh'
+            }
+        }
+    }
+}" > Jenkinsfile
