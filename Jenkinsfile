@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/akash124353/scorll-web.git'
+                git 'https://github.com/akash124353/github-demo.git'
             }
         }
 
