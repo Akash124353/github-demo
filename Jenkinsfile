@@ -1,33 +1,50 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'java-11'
+        maven 'maven'
+    }
+
     environment {
-        DOCKER_IMAGE = 'akash124353/test-main:latest'
+        IMAGE_NAME = "akash124353/lord-basaveshwar"
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Git Checkout') {
             steps {
-                git 'https://github.com/akash124353/github-demo.git'
+                git branch: 'master', url: 'https://github.com/akash124353/web-application.git'
+            }
+        }
+
+        stage('Code Compile') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+
+        stage('Code Package') {
+            steps {
+                sh 'mvn clean install'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    docker build -t $DOCKER_IMAGE .
-                '''
+                sh "docker build -t ${IMAGE_NAME} ."
             }
         }
 
-        stage('Login to DockerHub') {
+        stage('Run Container') {
+            steps {
+                sh "docker run -it -d --name d8 -p 9007:8080 ${IMAGE_NAME}"
+            }
+        }
+
+        stage('Login to Docker Hub') {
             steps {
                 script {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'docker-hub-credentials',
-                        usernameVariable: 'DOCKER_USERNAME',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    )]) {
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
                     }
                 }
@@ -36,13 +53,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                sh 'docker push $DOCKER_IMAGE'
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh 'microk8s.kubectl apply -f deploy.yml'
+                sh "docker push ${IMAGE_NAME}"
             }
         }
     }
