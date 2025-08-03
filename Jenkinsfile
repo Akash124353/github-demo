@@ -7,7 +7,7 @@ maven 'maven'
 stages{
 stage('git-checkout'){
 steps{
-git branch:'master',url:'https://github.com/akash124353/web-application.git'
+git branch:'master',git url: 'https://github.com/akash124353/web-application.git'
 }
 }
 stage('code compile'){
