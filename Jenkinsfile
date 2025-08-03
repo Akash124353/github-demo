@@ -1,49 +1,50 @@
-pipeline {
-    agent any
-
-    environment {
-        DOCKER_IMAGE = 'akash124353/test-main:latest'
-    }
-
-    stages {
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/akash124353/github-demo.git'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh '''
-                    docker build -t $DOCKER_IMAGE .
-                '''
-            }
-        }
-
-        stage('Login to DockerHub') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'docker-hub-credentials',
-                        usernameVariable: 'DOCKER_USERNAME',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    )]) {
-                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
-                    }
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                sh 'docker push $DOCKER_IMAGE'
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh 'microk8s.kubectl apply -f deploy.yml'
-            }
-        }
-    }
+pipeline
+agent any
+tools{
+jdk 'java-11'
+maven 'maven'
+}
+stages{
+stage('git-checkout'){
+steps{
+git branch:'master',url:'https://github.com/akash124353/web-application.git'
+}
+}
+stage('code compile'){
+steps{
+sh 'mvn compile'
+}
+}
+stage('code package'){
+steps{
+sh 'mvn clean install'
+}
+}
+stage('build and tag'){
+steps{
+sh 'docker build -t akash124353/lord Basaveshwar
+}
+}
+stage('containerisation'){
+steps{
+sh '''
+docker run -it -d --name d8 -p 9007:8080 akash124353/lord Basaveshwar
+...
+}
+}
+stage('login to docker-hub'){
+steps{
+script{
+withcredentials([usernamepassword(credentialsId:'docker-hub-credentials',username\
+sh "echo $docker_password | docker login -u $docker_username --password-stdin"
+}
+}
+}
+}
+stage('pushing image to repository'){
+steps{
+sh 'docker push akash124353/lord Basaveshwar
+}
+}
+}
 }
